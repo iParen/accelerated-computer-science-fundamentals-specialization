@@ -11,8 +11,8 @@
 
 Write your name and email address in the comment space here:
 
-Name: Aadam
-Email: aadimator@gmail.com
+Name:
+Email:
 
 (...end multi-line comment.)
 ******************** */
@@ -67,25 +67,48 @@ PNG grayscale(PNG image) {
  * @return The image with a spotlight.
  */
 PNG createSpotlight(PNG image, int centerX, int centerY) {
-
+  
+//  std::cout << pow(2, 2) << std::endl;
+  
   for (unsigned x = 0; x < image.width(); x++) {
     for (unsigned y = 0; y < image.height(); y++) {
       HSLAPixel & pixel = image.getPixel(x, y);
-
-      int distance = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2));
       
-      if (distance <= 160) {
-        pixel.l -= pixel.l * (distance * 0.5 / 100);
-      } else {
-        pixel.l *= 0.2;
+      double pixelsDistance = sqrt(((centerX - x)*(centerX - x)) + ((centerY - y)*(centerY - y)));
+      
+      if (pixelsDistance > 160) {
+        pixel.l = pixel.l * 0.2;
+      } 
+      else{
+        pixel.l = pixel.l*(1 - pixelsDistance * 0.005);
       }
       
     }
   }
 
   return image;
-  
+  }
+/*
+for(unsigned int x=0;x<image.width();x++){
+
+for(unsigned int y=0;y<image.height();y++){
+
+HSLAPixel & pixel = image.getPixel(x, y);
+
+double dis = sqrt((x-centerX)*(x - centerX)+(y - centerY)*(y - centerY));
+
+if (dis > 160) pixel.l = 0.2 * pixel.l;
+
+else pixel.l = pixel.l*(1 - 0.005*dis);
+
 }
+
+}
+
+return image;
+
+}
+*/
  
 
 /**
@@ -99,22 +122,28 @@ PNG createSpotlight(PNG image, int centerX, int centerY) {
  * @return The illinify'd image.
 **/
 PNG illinify(PNG image) {
-  int orangeValue = 11;
-  int blueValue = 216;
-
-  for (unsigned x = 0; x < image.width(); x++) {
+  
+    for (unsigned x = 0; x < image.width(); x++) {
     for (unsigned y = 0; y < image.height(); y++) {
       HSLAPixel & pixel = image.getPixel(x, y);
 
-      int max = 360;
-      int orangeDistance = abs(pixel.h - orangeValue);
-      orangeDistance = orangeDistance < max/2 ? orangeDistance : max - orangeDistance;
-      int blueDistance = abs(pixel.h - blueValue);
-      blueDistance = blueDistance < max/2 ? blueDistance : max - blueDistance;
-      pixel.h = (orangeDistance < blueDistance) ? orangeValue : blueValue;
+      // `pixel` is a reference to the memory stored inside of the PNG `image`,
+      // which means you're changing the image directly. No need to `set`
+      // the pixel since you're directly changing the memory of the image.
+        double distanceToOrange, distanceToBlue;
+        double illiniOrange = 11, illiniBlue = 216;
+        abs(pixel.h - illiniOrange) > 180 ?  distanceToOrange = abs(abs(pixel.h - illiniOrange) - 360) : distanceToOrange = abs(pixel.h - illiniOrange);
+        abs(pixel.h - illiniBlue) > 180 ?  distanceToBlue = abs(abs(pixel.h - illiniBlue) - 360) : distanceToBlue = abs(pixel.h - illiniBlue);
+        
+        if (distanceToBlue > distanceToOrange){
+          pixel.h = illiniOrange;
+          
+        } else {
+          pixel.h = illiniBlue;
+        }
+      }
+        
     }
-  }
-
   return image;
 }
  
@@ -132,25 +161,17 @@ PNG illinify(PNG image) {
 * @return The watermarked image.
 */
 PNG watermark(PNG firstImage, PNG secondImage) {
-
-  unsigned secondImageWidth = secondImage.width();
-  unsigned secondImageHeight = secondImage.height();
-
-  for (unsigned x = 0; x < firstImage.width(); x++) {
-    for (unsigned y = 0; y < firstImage.height(); y++) {
-      HSLAPixel & pixel = firstImage.getPixel(x, y);
-
-      if (x < secondImageWidth && y < secondImageHeight) {
-        HSLAPixel & secondPixel = secondImage.getPixel(x, y);
-        if (secondPixel.l == 1)
-        {
-          pixel.l = pixel.l < 0.8 ? pixel.l + 0.2 : 1.0;
-        }
-        
-      }
+  
+  for(unsigned int x=0;x<secondImage.width();x++){
+    for(unsigned int y=0;y<secondImage.height();y++){
+      HSLAPixel & pixel1 = firstImage.getPixel(x, y);
+      HSLAPixel & pixel2 = secondImage.getPixel(x, y);
+      
+      if(pixel2.l == 1 && pixel1.l + 0.2 > 1.0) pixel1.l = pixel1.l = 1.0;
+      else if (pixel2.l == 1) pixel1.l = pixel1.l + 0.2;
       
     }
+    
   }
-
   return firstImage;
 }
