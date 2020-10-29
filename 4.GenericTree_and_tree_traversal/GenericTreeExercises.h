@@ -340,9 +340,6 @@ std::vector<T> traverseLevels(GenericTree<T>& tree) {
   
   std::vector<TreeNode *> v;
   
-  //q.push(rootNodePtr);
-  
-  //for(int i=0; i < 4; i++){
   
   while(1){ 
     
@@ -353,16 +350,12 @@ std::vector<T> traverseLevels(GenericTree<T>& tree) {
       v.push_back(childPtr);
     }
   
-  rootNodePtr = v[0];
+  rootNodePtr = v.front();
   v.erase(v.begin());
   
   if(v.empty()) break;
   }
   
-//  results.push_back(rootNodePtr->data);
-  
-  
-
   return results;
 }
 
